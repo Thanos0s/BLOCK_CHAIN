@@ -1,0 +1,41 @@
+{
+  "contracts/simpleAMM.sol": {
+    "./ERC20.sol": "contracts/ERC20.sol",
+    "__sources__": {
+      "contracts/simpleAMM.sol": {
+        "content": "// SPDX-License-Identifier: MIT\npragma solidity ^0.8.0;\nimport \"./ERC20.sol\";\n\n\ncontract simpleAMM{\n    ERC20 public tokenA;\n    ERC20 public tokenB;\n    uint256 public reserveA;\n    uint256 public reserveB;\n\n    constructor(address _tokenA,address _tokenB){\n\n        tokenA =ERC20(_tokenA);\n        tokenB =ERC20(_tokenB);\n\n    }\n\n   function addLiquidity(uint256 amountA,uint256 amountB) external {\n    require(tokenA.transferFrom(msg.sender,address(this),amountA), \"A transfer Failed\" );\n    require(tokenB.transferFrom(msg.sender,address(this),amountB), \"A transfer Failed\" );\n      reserveA +=amountA;\n      reserveB +=amountB;\n   }\n   function getAmountOut(uint256 amountIn,uint256 reserveIn,uint256 reserveOut) public pure returns (uint256 amountOut){\n    uint256 amountInWithFee= amountIn*997;\n    uint256 num = amountInWithFee*reserveOut;\n    uint256 den =(reserveIn*1000) + amountInWithFee;\n    return num/den;\n   }\n   function swapAForB(uint256 amountAIn) external{\n    uint256 amountBOut = getAmountOut(amountAIn,reserveA,reserveB);\n    require(tokenA.transferFrom(msg.sender,address(this),amountAIn),\"A transfer failed\");\n    require(tokenB.transfer(msg.sender,amountBOut),\"B transfer failed\");\n    reserveA +=amountAIn;\n    reserveB -=amountBOut;\n   }\n   function swapBForA(uint256 amountBIn) external {\n    uint256 amountAOut = getAmountOut(amountBIn, reserveB, reserveA);\n    require(tokenB.transferFrom(msg.sender,address(this),amountBIn),\"B transfer failed\");\n    require(tokenA.transfer(msg.sender,amountAOut),\"A transfer failed\");\n    reserveB +=amountBIn;\n    reserveA -=amountAOut;\n   }\n\n}",
+        "file": "contracts/simpleAMM.sol"
+      },
+      "contracts/ERC20.sol": {
+        "content": "// SPDX-License-Identifier: MIT\r\npragma solidity ^0.8.0;\r\n\r\n// class ==contract\r\n contract ERC20{\r\nstring public name;\r\nstring public symbol;\r\nuint8 decimals=18;\r\nuint256 public totalsupply;\r\n\r\n\r\nmapping (address=>uint256) public balanceOf; // account with current balance\r\n\r\nmapping (address=> mapping(address=>uint256)) public allowance;\r\n\r\nconstructor(string memory _name,\r\nstring memory _symbol, uint256 _initialsupply)\r\n{\r\n    name=_name;\r\n    symbol = _symbol;\r\n    totalsupply =_initialsupply;\r\n    balanceOf[msg.sender]=_initialsupply;\r\n}\r\n// checking the guy is having amount or not\r\nfunction transfer(address to, uint256 amt) external returns (bool){\r\n  require(balanceOf[msg.sender]>=amt, \"INSUFFICNT AMT\");\r\n  balanceOf[msg.sender]-=amt;\r\n\r\n  balanceOf[to]+=amt;\r\n  return true;\r\n}\r\n// \r\nfunction approve(address spender,uint256 amt) external returns(bool){\r\n    allowance[msg.sender][spender]=amt;\r\n    return true;\r\n}\r\nfunction transferFrom(address from,address to,uint256 amt) external returns (bool){\r\n    require(balanceOf[from]>=amt, \"Insufficent amount\");\r\n    require(allowance[from][msg.sender]>=amt,\"Allowance exceeded\");\r\n\r\n    allowance[from][msg.sender]-=amt;\r\n\r\n    balanceOf[from]-=amt;\r\n    balanceOf[to]+=amt;\r\n    return true;\r\n}\r\n\r\n\r\n\r\n\r\n\r\n\r\n}",
+        "file": "contracts/ERC20.sol"
+      }
+    }
+  },
+  "contracts/TokenB.sol": {
+    "./ERC20.sol": "contracts/ERC20.sol",
+    "__sources__": {
+      "contracts/TokenB.sol": {
+        "content": "// SPDX-License-Identifier: MIT\r\npragma solidity ^0.8.0;\r\n\r\nimport \"./ERC20.sol\";\r\n\r\ncontract TokenB is ERC20{\r\n    constructor(uint256 initialSupply) ERC20(\"TokenB\",\"TKB\",initialSupply){\r\n        \r\n    }\r\n\r\n\r\n}",
+        "file": "contracts/TokenB.sol"
+      },
+      "contracts/ERC20.sol": {
+        "content": "// SPDX-License-Identifier: MIT\r\npragma solidity ^0.8.0;\r\n\r\n// class ==contract\r\n contract ERC20{\r\nstring public name;\r\nstring public symbol;\r\nuint8 decimals=18;\r\nuint256 public totalsupply;\r\n\r\n\r\nmapping (address=>uint256) public balanceOf; // account with current balance\r\n\r\nmapping (address=> mapping(address=>uint256)) public allowance;\r\n\r\nconstructor(string memory _name,\r\nstring memory _symbol, uint256 _initialsupply)\r\n{\r\n    name=_name;\r\n    symbol = _symbol;\r\n    totalsupply =_initialsupply;\r\n    balanceOf[msg.sender]=_initialsupply;\r\n}\r\n// checking the guy is having amount or not\r\nfunction transfer(address to, uint256 amt) external returns (bool){\r\n  require(balanceOf[msg.sender]>=amt, \"INSUFFICNT AMT\");\r\n  balanceOf[msg.sender]-=amt;\r\n\r\n  balanceOf[to]+=amt;\r\n  return true;\r\n}\r\n// \r\nfunction approve(address spender,uint256 amt) external returns(bool){\r\n    allowance[msg.sender][spender]=amt;\r\n    return true;\r\n}\r\nfunction transferFrom(address from,address to,uint256 amt) external returns (bool){\r\n    require(balanceOf[from]>=amt, \"Insufficent amount\");\r\n    require(allowance[from][msg.sender]>=amt,\"Allowance exceeded\");\r\n\r\n    allowance[from][msg.sender]-=amt;\r\n\r\n    balanceOf[from]-=amt;\r\n    balanceOf[to]+=amt;\r\n    return true;\r\n}\r\n\r\n\r\n\r\n\r\n\r\n\r\n}",
+        "file": "contracts/ERC20.sol"
+      }
+    }
+  },
+  "contracts/TokenA.sol": {
+    "./ERC20.sol": "contracts/ERC20.sol",
+    "__sources__": {
+      "contracts/TokenA.sol": {
+        "content": "// SPDX-License-Identifier: MIT\r\npragma solidity ^0.8.0;\r\n\r\nimport \"./ERC20.sol\";\r\n\r\ncontract TokenA is ERC20{\r\n    constructor(uint256 initialSupply) ERC20(\"TokenA\",\"TKA\",initialSupply){\r\n\r\n    }\r\n\r\n\r\n}",
+        "file": "contracts/TokenA.sol"
+      },
+      "contracts/ERC20.sol": {
+        "content": "// SPDX-License-Identifier: MIT\r\npragma solidity ^0.8.0;\r\n\r\n// class ==contract\r\n contract ERC20{\r\nstring public name;\r\nstring public symbol;\r\nuint8 decimals=18;\r\nuint256 public totalsupply;\r\n\r\n\r\nmapping (address=>uint256) public balanceOf; // account with current balance\r\n\r\nmapping (address=> mapping(address=>uint256)) public allowance;\r\n\r\nconstructor(string memory _name,\r\nstring memory _symbol, uint256 _initialsupply)\r\n{\r\n    name=_name;\r\n    symbol = _symbol;\r\n    totalsupply =_initialsupply;\r\n    balanceOf[msg.sender]=_initialsupply;\r\n}\r\n// checking the guy is having amount or not\r\nfunction transfer(address to, uint256 amt) external returns (bool){\r\n  require(balanceOf[msg.sender]>=amt, \"INSUFFICNT AMT\");\r\n  balanceOf[msg.sender]-=amt;\r\n\r\n  balanceOf[to]+=amt;\r\n  return true;\r\n}\r\n// \r\nfunction approve(address spender,uint256 amt) external returns(bool){\r\n    allowance[msg.sender][spender]=amt;\r\n    return true;\r\n}\r\nfunction transferFrom(address from,address to,uint256 amt) external returns (bool){\r\n    require(balanceOf[from]>=amt, \"Insufficent amount\");\r\n    require(allowance[from][msg.sender]>=amt,\"Allowance exceeded\");\r\n\r\n    allowance[from][msg.sender]-=amt;\r\n\r\n    balanceOf[from]-=amt;\r\n    balanceOf[to]+=amt;\r\n    return true;\r\n}\r\n\r\n\r\n\r\n\r\n\r\n\r\n}",
+        "file": "contracts/ERC20.sol"
+      }
+    }
+  }
+}
